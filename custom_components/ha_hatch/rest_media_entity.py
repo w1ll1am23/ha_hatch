@@ -20,7 +20,7 @@ from homeassistant.const import (
     STATE_PLAYING,
     STATE_OFF,
 )
-from hatch_rest_api import RestPlus, RestPlusAudioTrack, REST_PLUS_AUDIO_TRACKS, RestMini, RestMiniAudioTrack, REST_MINI_AUDIO_TRACKS
+from hatch_rest_api import RestIot, RestPlus, RestPlusAudioTrack, REST_PLUS_AUDIO_TRACKS, RestMini, RestMiniAudioTrack, REST_MINI_AUDIO_TRACKS
 from .rest_entity import RestEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
     _attr_media_content_type = MEDIA_TYPE_MUSIC
     _attr_device_class = DEVICE_CLASS_SPEAKER
 
-    def __init__(self, rest_device: RestMini | RestPlus, config_turn_on_media):
+    def __init__(self, rest_device: RestIot, config_turn_on_media):
         super().__init__(rest_device, "Media Player")
         self.config_turn_on_media = config_turn_on_media
         if isinstance(rest_device, RestMini):
@@ -67,7 +67,7 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
         if self.platform is None or self.rest_device.audio_track is None:
             return
         _LOGGER.debug(f"updating state:{self.rest_device}")
-        if isinstance(self.rest_device, RestMini) or self.rest_device.is_on:
+        if isinstance(self.rest_device, RestMini) or isinstance(self.rest_device, RestIot) or self.rest_device.is_on:
             if self.rest_device.is_playing:
                 self._attr_state = STATE_PLAYING
             else:

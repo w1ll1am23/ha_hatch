@@ -7,7 +7,7 @@ from homeassistant.components.light import (
     LightEntity,
 )
 import logging
-from hatch_rest_api import RestPlus
+from hatch_rest_api import RestPlus, RestIot
 
 from .const import (
     DOMAIN,
@@ -31,7 +31,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     rest_devices = hass.data[DOMAIN][DATA_REST_DEVICES]
     light_entities = []
     for rest_device in rest_devices:
-        if isinstance(rest_device, RestPlus):
+        if isinstance(rest_device, RestPlus) or isinstance(rest_device, RestIot):
             light_entities.append(HatchLightEntity(rest_device, config_turn_on_light))
     hass.data[DOMAIN][DATA_LIGHTS] = light_entities
     async_add_entities(light_entities)
@@ -41,7 +41,7 @@ class HatchLightEntity(RestEntity, LightEntity):
     _attr_color_mode = ColorMode.RGB
     _attr_supported_color_modes = {ColorMode.RGB}
 
-    def __init__(self, rest_device: RestPlus, config_turn_on_light: bool):
+    def __init__(self, rest_device: RestIot, config_turn_on_light: bool):
         super().__init__(rest_device, "Light")
         self.config_turn_on_light = config_turn_on_light
 
