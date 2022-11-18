@@ -48,9 +48,12 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
                     | SUPPORT_VOLUME_STEP
             )
         else:
-            self._attr_sound_mode_list = list(
-                map(lambda x: x.name, REST_PLUS_AUDIO_TRACKS[1:])
-            )
+            if isinstance(self.rest_device, RestIot):
+                self._attr_sound_mode_list = self.rest_device.favorite_names()
+            else:
+                self._attr_sound_mode_list = list(
+                    map(lambda x: x.name, REST_PLUS_AUDIO_TRACKS[1:])
+                )
             self.none_track = RestPlusAudioTrack.NONE
             self._attr_supported_features = (
                     SUPPORT_PAUSE
@@ -108,12 +111,15 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
         self.rest_device.set_audio_track(self.none_track)
 
     def select_sound_mode(self, sound_mode: str):
-        track = self._find_track(sound_mode=sound_mode)
-        if track is None:
-            track = self.none_track
-        self.rest_device.set_audio_track(track)
-        if self.config_turn_on_media:
-            self.turn_on()
+        if isinstance(self.rest_device, RestIot):
+            self.rest_device.set_favorite(sound_mode)
+        else:
+            track = self._find_track(sound_mode=sound_mode)
+            if track is None:
+                track = self.none_track
+            self.rest_device.set_audio_track(track)
+            if self.config_turn_on_media:
+                self.turn_on()
 
     def turn_off(self):
         self.media_stop()

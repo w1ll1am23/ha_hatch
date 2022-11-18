@@ -31,8 +31,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     rest_devices = hass.data[DOMAIN][DATA_REST_DEVICES]
     light_entities = []
     for rest_device in rest_devices:
-        if isinstance(rest_device, RestPlus) or isinstance(rest_device, RestIot):
+        if isinstance(rest_device, RestPlus):
             light_entities.append(HatchLightEntity(rest_device, config_turn_on_light))
+        elif isinstance(rest_device, RestIot):
+            light_entities.append(HatchLightEntity(rest_device, False))
     hass.data[DOMAIN][DATA_LIGHTS] = light_entities
     async_add_entities(light_entities)
 
@@ -49,7 +51,7 @@ class HatchLightEntity(RestEntity, LightEntity):
         if self.platform is None:
             return
         _LOGGER.debug(f"updating state:{self.rest_device}")
-        self._attr_is_on = self.rest_device.is_on
+        self._attr_is_on = self.rest_device.is_light_on
         self._attr_brightness = round(self.rest_device.brightness / 100 * 255.0, 0)
         self._attr_rgb_color = (self.rest_device.red, self.rest_device.green, self.rest_device.blue)
         self.async_write_ha_state()
@@ -68,10 +70,17 @@ class HatchLightEntity(RestEntity, LightEntity):
             rgb = self._attr_rgb_color
 
         _LOGGER.debug(f"turning on light to {rgb} with {brightness}")
-        self.rest_device.set_color(rgb[0], rgb[1], rgb[2], brightness)
+        if isinstance(self.rest_device, RestIot):
+            self.rest_device.set_color(rgb[0], rgb[1], rgb[2], 0, brightness, True)
+        else:
+            self.rest_device.set_color(rgb[0], rgb[1], rgb[2], brightness)
         if self.config_turn_on_light:
             _LOGGER.debug(f"auto turning on the hatch power switch for the light")
             self.rest_device.set_on(True)
 
     def turn_off(self):
-        self.rest_device.set_color(self.rest_device.red, self.rest_device.green, self.rest_device.blue, 0)
+        if isinstance(self.rest_device, RestIot):
+            _LOGGER.debug("turning off with rgbw = 0 and bright = 0")
+            self.rest_device.set_color(0, 0, 0, 0, 0, False)
+        else:
+            self.rest_device.set_color(self.rest_device.red, self.rest_device.green, self.rest_device.blue, 0)
