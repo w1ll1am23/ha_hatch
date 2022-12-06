@@ -63,7 +63,10 @@ class HatchLightEntity(RestEntity, LightEntity):
             # If 100 is sent to Abode, response is 99 causing an error
             brightness = round(kwargs[ATTR_BRIGHTNESS] * 100 / 255.0)
         else:
-            brightness = self._attr_brightness
+            if isinstance(self.rest_device, RestIot):
+                brightness = 0
+            else:
+                brightness = self._attr_brightness
         if ATTR_RGB_COLOR in kwargs:
             rgb = kwargs[ATTR_RGB_COLOR]
         else:

@@ -20,7 +20,7 @@ from homeassistant.const import (
     STATE_PLAYING,
     STATE_OFF,
 )
-from hatch_rest_api import RestIot, RestPlus, RestPlusAudioTrack, REST_PLUS_AUDIO_TRACKS, RestMini, RestMiniAudioTrack, REST_MINI_AUDIO_TRACKS
+from hatch_rest_api import RestPlus, RestPlusAudioTrack, REST_PLUS_AUDIO_TRACKS, RestMini, RestMiniAudioTrack, REST_MINI_AUDIO_TRACKS
 from .rest_entity import RestEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
     _attr_media_content_type = MEDIA_TYPE_MUSIC
     _attr_device_class = DEVICE_CLASS_SPEAKER
 
-    def __init__(self, rest_device: RestIot, config_turn_on_media):
+    def __init__(self, rest_device: RestMini, config_turn_on_media):
         super().__init__(rest_device, "Media Player")
         self.config_turn_on_media = config_turn_on_media
         if isinstance(rest_device, RestMini):
@@ -48,12 +48,9 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
                     | SUPPORT_VOLUME_STEP
             )
         else:
-            if isinstance(self.rest_device, RestIot):
-                self._attr_sound_mode_list = self.rest_device.favorite_names()
-            else:
-                self._attr_sound_mode_list = list(
-                    map(lambda x: x.name, REST_PLUS_AUDIO_TRACKS[1:])
-                )
+            self._attr_sound_mode_list = list(
+                map(lambda x: x.name, REST_PLUS_AUDIO_TRACKS[1:])
+            )
             self.none_track = RestPlusAudioTrack.NONE
             self._attr_supported_features = (
                     SUPPORT_PAUSE
@@ -70,7 +67,7 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
         if self.platform is None or self.rest_device.audio_track is None:
             return
         _LOGGER.debug(f"updating state:{self.rest_device}")
-        if isinstance(self.rest_device, RestMini) or isinstance(self.rest_device, RestIot) or self.rest_device.is_on:
+        if isinstance(self.rest_device, RestMini) or self.rest_device.is_on:
             if self.rest_device.is_playing:
                 self._attr_state = STATE_PLAYING
             else:
@@ -111,15 +108,12 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
         self.rest_device.set_audio_track(self.none_track)
 
     def select_sound_mode(self, sound_mode: str):
-        if isinstance(self.rest_device, RestIot):
-            self.rest_device.set_favorite(sound_mode)
-        else:
-            track = self._find_track(sound_mode=sound_mode)
-            if track is None:
-                track = self.none_track
-            self.rest_device.set_audio_track(track)
-            if self.config_turn_on_media:
-                self.turn_on()
+        track = self._find_track(sound_mode=sound_mode)
+        if track is None:
+            track = self.none_track
+        self.rest_device.set_audio_track(track)
+        if self.config_turn_on_media:
+            self.turn_on()
 
     def turn_off(self):
         self.media_stop()
