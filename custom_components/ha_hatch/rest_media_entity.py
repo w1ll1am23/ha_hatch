@@ -31,7 +31,7 @@ class RestMediaEntity(RestEntity, MediaPlayerEntity):
     _attr_media_content_type = MEDIA_TYPE_MUSIC
     _attr_device_class = DEVICE_CLASS_SPEAKER
 
-    def __init__(self, rest_device: RestMini, config_turn_on_media):
+    def __init__(self, rest_device: RestMini | RestPlus, config_turn_on_media):
         super().__init__(rest_device, "Media Player")
         self.config_turn_on_media = config_turn_on_media
         if isinstance(rest_device, RestMini):

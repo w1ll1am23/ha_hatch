@@ -11,6 +11,7 @@ from .const import (
     CONFIG_TURN_ON_MEDIA,
     CONFIG_TURN_ON_DEFAULT,
 )
+from hatch_rest_api import RestIot
 from .rest_media_entity import RestMediaEntity
 from .riot_media_entity import RiotMediaEntity
 
@@ -28,7 +29,7 @@ async def async_setup_entry(
     )
 
     rest_devices = hass.data[DOMAIN][DATA_REST_DEVICES]
-    media_player_entities = list(map(lambda rest_device: RiotMediaEntity(rest_device), rest_devices))
+    media_player_entities = list(map(lambda rest_device: RiotMediaEntity(rest_device) if isinstance(rest_device, RestIot) else RestMediaEntity(rest_device), rest_devices))
     hass.data[DOMAIN][DATA_MEDIA_PlAYERS] = media_player_entities
     async_add_entities(media_player_entities)
 

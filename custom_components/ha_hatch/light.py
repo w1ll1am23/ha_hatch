@@ -43,7 +43,7 @@ class HatchLightEntity(RestEntity, LightEntity):
     _attr_color_mode = ColorMode.RGB
     _attr_supported_color_modes = {ColorMode.RGB}
 
-    def __init__(self, rest_device: RestIot, config_turn_on_light: bool):
+    def __init__(self, rest_device: RestIot | RestPlus, config_turn_on_light: bool):
         super().__init__(rest_device, "Light")
         self.config_turn_on_light = config_turn_on_light
 
@@ -51,7 +51,10 @@ class HatchLightEntity(RestEntity, LightEntity):
         if self.platform is None:
             return
         _LOGGER.debug(f"updating state:{self.rest_device}")
-        self._attr_is_on = self.rest_device.is_light_on
+        if isinstance(self.rest_device, RestIot):
+            self._attr_is_on = self.rest_device.is_light_on
+        else:
+            self._attr_is_on = self.is_on
         self._attr_brightness = round(self.rest_device.brightness / 100 * 255.0, 0)
         self._attr_rgb_color = (self.rest_device.red, self.rest_device.green, self.rest_device.blue)
         self.async_write_ha_state()
