@@ -59,7 +59,7 @@ class RiotMediaEntity(RestEntity, MediaPlayerEntity):
         self.rest_device.set_volume(volume * 100)
 
     def media_play(self):
-        self.rest_device.play_first_favorite()
+        self.rest_device.set_favorite(self._attr_sound_mode_list[0])
 
     def select_sound_mode(self, sound_mode: str):
         self.rest_device.set_favorite(sound_mode)
