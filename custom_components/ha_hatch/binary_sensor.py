@@ -26,7 +26,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HatchOnlineSensor(RestEntity, BinarySensorEntity):
     _attr_icon = "mdi:wifi-check"
 
-    def __init__(self, rest_device: RestIot | RestMini | RestPlus):
+    def __init__(self, rest_device: RestIot):
         super().__init__(rest_device, "Wifi")
         self.entity_description = EntityDescription(
             key=f"#{self._attr_unique_id}-online",

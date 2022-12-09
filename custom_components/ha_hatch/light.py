@@ -43,7 +43,7 @@ class HatchLightEntity(RestEntity, LightEntity):
     _attr_color_mode = ColorMode.RGB
     _attr_supported_color_modes = {ColorMode.RGB}
 
-    def __init__(self, rest_device: RestIot | RestPlus, config_turn_on_light: bool):
+    def __init__(self, rest_device: RestIot, config_turn_on_light: bool):
         super().__init__(rest_device, "Light")
         self.config_turn_on_light = config_turn_on_light
 
